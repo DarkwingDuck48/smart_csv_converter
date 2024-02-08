@@ -77,33 +77,23 @@ fn main() {
         .unwrap();
     let mut wtr = Writer::from_writer(csv_file);
     for sheet_name in worksheets {
-        // Read whole worksheet data and provide some statistics
-        if let Ok(range) = workbook.worksheet_range(&sheet_name) {
-            if cli.debug {
-                let total_cells = range.get_size().0 * range.get_size().1;
-                let non_empty_cells: usize = range.used_cells().count();
-                println!(
-                    "Found {} cells in {}, including {} non empty cells",
-                    total_cells, sheet_name, non_empty_cells
-                );
+        let sheet = workbook.worksheet_range(&sheet_name).unwrap();
+        println!("Work with {:?}", sheet_name);
+        // Write data from sheet to target csv file
+        for _row in sheet.rows() {
+            println!("row={:?}", _row);
+            let lastIndex = _row.len() - 1;
+            for (index, ele) in _row.iter().enumerate() {
+
+                match ele {
+                    DataType::DateTime(ele) => wtr.write_field(&ele.to_string()),
+                    DataType::Float(ele) => wtr.write_field(&ele.to_string()),
+                    DataType::String(ele) => wtr.write_field(&ele),
+                    DataType::Empty => wtr.write_field(" "),
+                    _ => wtr.write_field("NoType")
+                }.expect("No write");
             }
         }
-
-        let sheet = workbook.worksheet_range(&sheet_name).unwrap();
-        wtr.write_record(vec![sheet_name]).expect("Cant write row");
-        // Write data from sheet to target csv file
-        // for _row in sheet.rows() {
-        //     println!("row={:?}", _row);
-        //     let mut ele_row = vec![];
-        //     for ele in _row {
-        //         match ele {
-        //             DataType::Int(ele) => ele_row.push(ele.clone().to_string()),
-        //             DataType::Empty => ele_row.push(" "),
-        //
-        //         }
-        //
-        //     }
-        //     //wtr.write_record(_row).expect("Cant write row");
-        // }
     }
+    wtr.flush().unwrap();
 }
