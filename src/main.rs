@@ -1,12 +1,12 @@
 /// TODO:
 /// 1. Implement Config module -> parse from toml file
 /// 2. Parse excel fle
-/// 3. Issue with smart tables in source files: when no tables in file raises error
 pub mod cli;
 pub mod config;
 
+use std::string::String;
 use crate::config::Config;
-use calamine::{open_workbook, DataType, Reader, Xlsx};
+use calamine::{open_workbook, Data, Reader, Xlsx};
 use clap::Parser;
 use csv::Writer;
 use std::fs::OpenOptions;
@@ -65,6 +65,7 @@ fn main() {
         // Not worked properly code - if no tables in source file caused error
         workbook.load_tables().unwrap();
         tables_list = workbook.table_names();
+        println!("{:?}", tables_list)
     }
 
     let defined_names = workbook.defined_names();
@@ -72,7 +73,8 @@ fn main() {
     let csv_file = OpenOptions::new()
         .write(true)
         .create(true)
-        .append(true)
+        .truncate(true)
+//        .append(true)
         .open(&config.target_file)
         .unwrap();
     let mut wtr = Writer::from_writer(csv_file);
@@ -82,17 +84,19 @@ fn main() {
         // Write data from sheet to target csv file
         for _row in sheet.rows() {
             println!("row={:?}", _row);
-            let lastIndex = _row.len() - 1;
-            for (index, ele) in _row.iter().enumerate() {
-
+            let mut rows_values: Vec<String> = Vec::new();
+            for ele in _row {
+                let field;
                 match ele {
-                    DataType::DateTime(ele) => wtr.write_field(&ele.to_string()),
-                    DataType::Float(ele) => wtr.write_field(&ele.to_string()),
-                    DataType::String(ele) => wtr.write_field(&ele),
-                    DataType::Empty => wtr.write_field(" "),
-                    _ => wtr.write_field("NoType")
-                }.expect("No write");
+                    Data::DateTime(ele) => field = ele.to_string(),
+                    Data::Float(ele) => field = ele.to_string(),
+                    Data::String(ele) => field = ele.to_string(),
+                    Data::Empty => field = String::from(""),
+                    _ => field = String::from("No Type")
+                };
+                rows_values.push(field);
             }
+            wtr.write_record(rows_values).expect("Can't write row");
         }
     }
     wtr.flush().unwrap();
