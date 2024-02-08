@@ -1,0 +1,12 @@
+[file.source]
+path = 'D:\Work\GIT_work\rust_excel_to_csv_conterter\excel_to_csv\example_excel\test1.xlsx'
+sheets = ['test1', "Test2"]
+
+[file.target]
+path = 'D:\Work\GIT_work\rust_excel_to_csv_conterter\excel_to_csv\example_excel\test1.csv'
+separator = ','
+columns = ['Col1', 'col2', 'col3']
+
+[file.target.test1]
+path = 'D:\Work\GIT_work\rust_excel_to_csv_conterter\excel_to_csv\example_excel\test1_sh_test1.csv'
+columns = ['SH_col1', 'SH_col2']
