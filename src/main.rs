@@ -1,115 +1,26 @@
 pub mod cli;
 pub mod config;
 pub mod errors;
+pub mod celladress;
+pub mod namedrange;
 mod test;
 
 
 use crate::config::Config;
-use crate::errors::ExcelLetterConvertError;
+use crate::celladress::CellAddress;
+use crate::namedrange::NamedRange;
+
 use regex::Regex;
 use calamine::{open_workbook, Data, Range, Reader, Xlsx};
 use clap::Parser;
 use csv::Writer;
-use log::{LevelFilter};
+use log::LevelFilter;
 use log::{debug, error, info, warn};
 use std::fs::{File, OpenOptions};
-use std::io::BufReader;
 use std::path::PathBuf;
 use std::string::String;
-use std::borrow::BorrowMut;
-use std::string;
 
 
-#[derive(Debug, Default)]
-struct NamedRange {
-    name: String,
-    sheet_name: String,
-    range: (CellAddress, CellAddress),
-}
-
-impl NamedRange {
-    fn new(name: String, sheet_name: String, range: (CellAddress, CellAddress)) -> Self {
-        Self { name, sheet_name, range }
-    }
-    fn init_default() -> Self {
-        Self {
-            name: String::from(""),
-            sheet_name: String::from(""),
-            range: (
-                CellAddress::new(0, 0),
-                CellAddress::new(0, 0)
-            ),
-        }
-    }
-}
-
-
-#[derive(Debug, PartialEq, Default)]
-struct CellAddress {
-    column: u32,
-    row: u32,
-}
-
-impl CellAddress {
-    fn new(column: u32, row: u32) -> Self {
-        Self { column, row }
-    }
-    fn to_tuple(self) -> (u32, u32) {
-        (self.row, self.column)
-    }
-    /// Creates absolute cell address from Excel address, so it can be used for construct calamine cell objects
-    /// A1 => CellAddress(0, 0)
-    /// AA1 => CellAddress(26, 0)
-    /// Note that columns and rows indexes starts from 0.
-    pub fn from_excel(column_letter: &str, row: u32) -> Self {
-        let chars_to_parse: Vec<char> = column_letter.chars().collect();
-        let mut column_result;
-        match chars_to_parse.len() {
-            1 => column_result = 0u32,
-            _ => column_result = ((chars_to_parse.len() - 1) * 25 + 1) as u32
-        }
-
-        column_result += Self::convert_letter_to_column(chars_to_parse.last().unwrap()).unwrap();
-        Self {
-            column: column_result,
-            row: row - 1,
-        }
-    }
-    fn convert_letter_to_column(letter: &char) -> Result<u32, ExcelLetterConvertError> {
-        return match letter.to_uppercase().last().unwrap() {
-            'A' => Ok(0u32),
-            'B' => Ok(1u32),
-            'C' => Ok(2u32),
-            'D' => Ok(3u32),
-            'E' => Ok(4u32),
-            'F' => Ok(5u32),
-            'G' => Ok(6u32),
-            'H' => Ok(7u32),
-            'I' => Ok(8u32),
-            'J' => Ok(9u32),
-            'K' => Ok(10u32),
-            'L' => Ok(11u32),
-            'M' => Ok(12u32),
-            'N' => Ok(13u32),
-            'O' => Ok(14u32),
-            'P' => Ok(15u32),
-            'Q' => Ok(16u32),
-            'R' => Ok(17u32),
-            'S' => Ok(18u32),
-            'T' => Ok(19u32),
-            'U' => Ok(20u32),
-            'V' => Ok(21u32),
-            'W' => Ok(22u32),
-            'X' => Ok(23u32),
-            'Y' => Ok(24u32),
-            'Z' => Ok(25u32),
-            _ => Err(ExcelLetterConvertError(format!(
-                "Cant parse letter {} to Excel column",
-                letter
-            ))),
-        };
-    }
-}
 
 fn convert_excel_range_to_numbers(rng: &str) -> CellAddress {
     // Columns and rows starts from 0
@@ -119,7 +30,7 @@ fn convert_excel_range_to_numbers(rng: &str) -> CellAddress {
     CellAddress::from_excel(column_letter, row_number)
 }
 
-fn parse_defined_name(name: &String, range_address: &String) -> NamedRange {
+fn parse_defined_name(name: &str, range_address: &String) -> NamedRange {
     let regex_range = Regex::new(r"(?<sheetname>\w*)?!?(?<startcell>\$?\w+\$?\d+):?(?<endcell>\$?\w+\$?\d+)?").unwrap();
     let parts = regex_range.captures(range_address).unwrap();
     let defined_sheet_name = parts.name("sheetname").map_or("", |m| m.as_str());
@@ -219,20 +130,23 @@ fn main() {
         info!("{:?}", tables_list)
     }
 
-    let mut named_range: NamedRange = Default::default();
+    let mut named_range: Vec<NamedRange> = vec![];
 
     for def_name in workbook.defined_names() {
         println!("{:?}", def_name);
-        named_range = parse_defined_name(
+        let tmp_range = parse_defined_name(
             &def_name.0,
             &def_name.1,
         );
+        named_range.push(tmp_range);
     }
-    let sheet_ref = workbook.worksheet_range(&named_range.sheet_name).expect("No sheet in workbook");
-    let named_sheet_range = sheet_ref.range(named_range.range.0.to_tuple(), named_range.range.1.to_tuple());
-    println!("Named range name: {:?}", named_range.name);
-    println!("Named range sheet_name: {:?}", named_range.sheet_name);
-    println!("{:?}", named_sheet_range);
+    println!("{:?}", named_range.len());
+    for nrange in named_range {
+        println!("Named range name: {:?}", nrange.name);
+        println!("Named range sheet_name: {:?}", nrange.sheet_name);
+        let named_sheet_range = nrange.construct_range(&mut workbook);
+        println!("{:?}", named_sheet_range);
+    }
 
     let csv_file = OpenOptions::new()
         .write(true)
