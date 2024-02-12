@@ -1,4 +1,3 @@
-
 use std::path::PathBuf;
 use toml::Table;
 pub struct Config {
