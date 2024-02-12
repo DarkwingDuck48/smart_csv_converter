@@ -22,7 +22,7 @@ impl NamedRange {
     }
 }
 
-fn parse_defined_name(name: &str, range_address: &String) -> NamedRange {
+pub fn parse_defined_name(name: &str, range_address: &String) -> NamedRange {
     let regex_range = Regex::new(r"(?<sheetname>\w*)?!?(?<startcell>\$?\w+\$?\d+):?(?<endcell>\$?\w+\$?\d+)?").unwrap();
     let parts = regex_range.captures(range_address).unwrap();
     let defined_sheet_name = parts.name("sheetname").map_or("", |m| m.as_str());

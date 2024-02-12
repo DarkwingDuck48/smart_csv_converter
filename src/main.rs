@@ -118,7 +118,7 @@ fn main() {
 
     for def_name in workbook.defined_names() {
         println!("{:?}", def_name);
-        let tmp_range = parse_defined_name(
+        let tmp_range = namedrange::parse_defined_name(
             &def_name.0,
             &def_name.1,
         );
