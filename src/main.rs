@@ -1,16 +1,15 @@
 pub mod cli;
 pub mod config;
 pub mod errors;
-pub mod celladress;
+pub mod celladdress;
 pub mod namedrange;
 mod test;
 
 
 use crate::config::Config;
-use crate::celladress::CellAddress;
 use crate::namedrange::NamedRange;
 
-use regex::Regex;
+
 use calamine::{open_workbook, Data, Range, Reader, Xlsx};
 use clap::Parser;
 use csv::Writer;
@@ -22,22 +21,7 @@ use std::string::String;
 
 
 
-fn convert_excel_range_to_numbers(rng: &str) -> CellAddress {
-    // Columns and rows starts from 0
-    let parts: Vec<_> = rng.split("$").collect();
-    let column_letter = parts[1];
-    let row_number: u32 = parts[2].to_string().parse().unwrap();
-    CellAddress::from_excel(column_letter, row_number)
-}
 
-fn parse_defined_name(name: &str, range_address: &String) -> NamedRange {
-    let regex_range = Regex::new(r"(?<sheetname>\w*)?!?(?<startcell>\$?\w+\$?\d+):?(?<endcell>\$?\w+\$?\d+)?").unwrap();
-    let parts = regex_range.captures(range_address).unwrap();
-    let defined_sheet_name = parts.name("sheetname").map_or("", |m| m.as_str());
-    let start_cell_address = convert_excel_range_to_numbers(parts.name("startcell").map_or("", |m| m.as_str()));
-    let end_cell_address = convert_excel_range_to_numbers(parts.name("endcell").map_or(parts.name("startcell").unwrap().as_str(), |m| m.as_str()));
-    NamedRange::new(name.to_string(), defined_sheet_name.to_string(), (start_cell_address, end_cell_address))
-}
 
 fn parse_sheet(sheet: Range<Data>, wtr: &mut Writer<File>) {
     // Write data from sheet to target csv file

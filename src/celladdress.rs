@@ -29,6 +29,15 @@ impl CellAddress {
             row: row - 1,
         }
     }
+    /// Converts Excel address(like $A$1 or $A1 or A1 or A$1) to correspond CellAddress -> (0, 0) for A1 cell
+    pub fn convert_excel_range_to_numbers(rng: &str) -> CellAddress {
+        // Columns and rows starts from 0
+        // TODO: Replace split to regex value
+        let parts: Vec<_> = rng.split("$").collect();
+        let column_letter = parts[1];
+        let row_number: u32 = parts[2].to_string().parse().unwrap();
+        CellAddress::from_excel(column_letter, row_number)
+    }
     fn convert_letter_to_column(letter: &char) -> Result<u32, ExcelLetterConvertError> {
         match letter.to_uppercase().last().unwrap() {
             'A' => Ok(0u32),
