@@ -1,9 +1,10 @@
+use regex::Regex;
 use crate::errors::ExcelLetterConvertError;
 
 #[derive(Debug, PartialEq,Default, Clone, Copy)]
 pub struct CellAddress {
-    column: u32,
-    row: u32,
+    pub column: u32,
+    pub row: u32,
 }
 
 impl CellAddress {
@@ -30,12 +31,12 @@ impl CellAddress {
         }
     }
     /// Converts Excel address(like $A$1 or $A1 or A1 or A$1) to correspond CellAddress -> (0, 0) for A1 cell
-    pub fn convert_excel_range_to_numbers(rng: &str) -> CellAddress {
+    pub fn convert_excel_cell_address_to_numbers(rng: &str) -> CellAddress {
         // Columns and rows starts from 0
-        // TODO: Replace split to regex value
-        let parts: Vec<_> = rng.split("$").collect();
-        let column_letter = parts[1];
-        let row_number: u32 = parts[2].to_string().parse().unwrap();
+        let cell_pattern = Regex::new(r"\$?(?<column>[a-zA-Z]*)\$?(?<row>\d*)").unwrap();
+        let parts = cell_pattern.captures(rng).unwrap();
+        let column_letter = parts.name("column").map_or("", |m| m.as_str());
+        let row_number: u32 = parts.name("row").map_or(0u32, |m| m.as_str().trim().parse::<u32>().unwrap());
         CellAddress::from_excel(column_letter, row_number)
     }
     fn convert_letter_to_column(letter: &char) -> Result<u32, ExcelLetterConvertError> {

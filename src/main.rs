@@ -5,9 +5,11 @@ pub mod celladdress;
 pub mod namedrange;
 mod test;
 
-
-use crate::config::Config;
-use crate::namedrange::NamedRange;
+use crate::{
+    config::Config,
+    namedrange::NamedRange,
+    namedrange::get_named_ranges,
+};
 
 
 use calamine::{open_workbook, Data, Range, Reader, Xlsx};
@@ -115,16 +117,8 @@ fn main() {
     }
 
     let mut named_range: Vec<NamedRange> = vec![];
+    named_range = get_named_ranges(&mut workbook);
 
-    for def_name in workbook.defined_names() {
-        println!("{:?}", def_name);
-        let tmp_range = namedrange::parse_defined_name(
-            &def_name.0,
-            &def_name.1,
-        );
-        named_range.push(tmp_range);
-    }
-    println!("{:?}", named_range.len());
     for nrange in named_range {
         println!("Named range name: {:?}", nrange.name);
         println!("Named range sheet_name: {:?}", nrange.sheet_name);
