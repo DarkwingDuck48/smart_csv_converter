@@ -1,52 +1,29 @@
-/// TODO:
-/// 1. Implement Config module -> parse from toml file
-/// 2. Parse excel fle
 pub mod cli;
 pub mod config;
+pub mod errors;
+pub mod celladdress;
+pub mod namedrange;
+mod test;
 
-use std::string::String;
-use std::fs::{File, OpenOptions};
-use std::path::PathBuf;
-use calamine::{open_workbook, Data, Reader, Xlsx, Range, Cell};
+use crate::{
+    config::Config,
+    namedrange::NamedRange,
+    namedrange::get_named_ranges,
+};
+
+
+use calamine::{open_workbook, Data, Range, Reader, Xlsx};
 use clap::Parser;
 use csv::Writer;
-use log::{LevelFilter};
-use log::{info, warn, debug, error};
-use crate::config::Config;
-
-#[derive(Debug)]
-struct AbsoluteCellAddress {
-    column: u32,
-    row: u32,
-}
-
-impl AbsoluteCellAddress {}
+use log::LevelFilter;
+use log::{debug, error, info, warn};
+use std::fs::{File, OpenOptions};
+use std::path::PathBuf;
+use std::string::String;
 
 
-fn convert_range_to_numbers(rng: String) -> AbsoluteCellAddress {
-    /// Columns and rows starts from 0
-    let parts: Vec<_> = rng.split("$").collect();
-    let column_letter = parts[1];
-    let row_number = parts[2];
-    println!("Column {:?}; Row {row_number} ", column_letter);
-    AbsoluteCellAddress {
-        column: 0,
-        row: 0,
-    }
-}
 
-fn parse_defined_name(name: &String, range_address: &String) {
-    debug!("Work with {name} and address is {range_address}");
-    let parts: Vec<_> = range_address.split("!").collect();
-    println!("SheetName: {:?}", parts[0]);
-    println!("Range Address: {}", parts[1]);
-    let rng_parts: Vec<_> = parts[1].split(":").collect();
-    let start_rng = rng_parts[0].to_string();
-    let end_rng = rng_parts[1].to_string();
-    println!("Start cell address {start_rng}");
-    println!("End cell address {end_rng}");
-    convert_range_to_numbers(start_rng);
-}
+
 
 fn parse_sheet(sheet: Range<Data>, wtr: &mut Writer<File>) {
     // Write data from sheet to target csv file
@@ -62,14 +39,13 @@ fn parse_sheet(sheet: Range<Data>, wtr: &mut Writer<File>) {
                 Data::String(ele) => field = ele.to_string(),
                 Data::Error(ele) => field = ele.to_string(),
                 Data::Empty => field = String::from(""),
-                _ => field = String::from("No Type")
+                _ => field = String::from("No Type"),
             };
             rows_values.push(field);
         }
         wtr.write_record(rows_values).unwrap();
     }
 }
-
 
 fn main() {
     let cli = cli::Cli::parse();
@@ -84,15 +60,20 @@ fn main() {
     simple_logging::log_to_file(log_path, LevelFilter::Debug).expect("Cant find log file");
     info!("Debug mode: {:?}", cli.debug);
 
+    let source_path: PathBuf;
+    match cli.source_file {
+        source_file => source_path = source_file,
+        _ => source_path = PathBuf::from("D:\\Work\\GIT_work\\rust_excel_to_csv_conterter\\excel_to_csv\\example_excel\\test1.xlsx"),
+    }
     // Create target_path for file
     let target_path;
     match cli.target_file {
         Some(target_file) => target_path = target_file,
-        None => target_path = cli.source_file.with_extension("csv"),
+        None => target_path = source_path.with_extension("csv"),
     }
 
     let config = Config {
-        source_file: cli.source_file,
+        source_file: source_path,
         target_file: target_path,
         sheets_list: cli.parsed_sheets,
         named_range: vec![],
@@ -135,20 +116,26 @@ fn main() {
         info!("{:?}", tables_list)
     }
 
-    for def_name in workbook.defined_names() {
-        parse_defined_name(&def_name.0, &def_name.1);
+    let mut named_range: Vec<NamedRange> = vec![];
+    named_range = get_named_ranges(&mut workbook);
+
+    for nrange in named_range {
+        println!("Named range name: {:?}", nrange.name);
+        println!("Named range sheet_name: {:?}", nrange.sheet_name);
+        let named_sheet_range = nrange.construct_range(&mut workbook);
+        println!("{:?}", named_sheet_range);
     }
+
     let csv_file = OpenOptions::new()
         .write(true)
         .create(true)
         .truncate(true)
-//        .append(true)
+        //        .append(true)
         .open(&config.target_file)
         .unwrap();
     let mut wtr = Writer::from_writer(csv_file);
     for sheet_name in worksheets {
         let sheet = workbook.worksheet_range(&sheet_name).unwrap();
-        debug!("Working with {sheet_name}");
         parse_sheet(sheet, &mut wtr);
     }
     wtr.flush().unwrap();
