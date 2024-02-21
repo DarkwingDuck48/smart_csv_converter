@@ -1,0 +1,37 @@
+[file.source]
+path = 'D:\Work\GIT_work\rust_excel_to_csv_conterter\excel_to_csv\example_excel\test1.xlsx'
+sheets = ['test1', "Test2"]
+
+[file.target]
+path = 'D:\Work\GIT_work\rust_excel_to_csv_conterter\excel_to_csv\example_excel\test1.csv'
+separator = ','
+columns = ['Col1', 'col2', 'col3']
+
+[sheets.global]
+columns = ['Column1', 'Column2', 'Column3']
+named_ranges = ['nr1', 'nr2']
+conditions = [
+    'nr1 > 20',
+    'nr2 < 20'
+]
+
+[[sheets.local]]
+sheet_name = 'test1'
+path = 'D:\Work\GIT_work\rust_excel_to_csv_conterter\excel_to_csv\example_excel\test1_sheet1.csv'
+separator = '|'
+columns = ['One', 'Two']
+named_ranges = ['test1_rn', 'test2_rn']
+conditions = [
+    'test1_rn > 6',
+    'test2_rn < 5'
+]
+[[sheets.local]]
+sheet_name = 'test2'
+path = 'D:\Work\GIT_work\rust_excel_to_csv_conterter\excel_to_csv\example_excel\test2_sheet1.csv'
+separator = '&'
+columns = ['Lalala', 'zuzuzu']
+named_ranges = ['test2_rn', 'test3_rn']
+conditions = [
+    'test1_rn > 6',
+    'test2_rn < 5'
+]
