@@ -26,12 +26,11 @@ pub struct Sheets {
     pub global: Option<GlobalSheets>,
     pub local: Option<Vec<LocalSheet>>,
 }
-
 #[derive(Deserialize, Debug, Clone)]
 pub struct GlobalSheets {
     columns: Option<Vec<String>>,
     named_ranges: Option<Vec<String>>,
-    conditions: Option<Vec<String>>,
+    conditions: Option<Vec<String>>
 }
 
 #[derive(Deserialize, Debug, Clone)]
@@ -40,5 +39,5 @@ pub struct LocalSheet {
     pub separator: Option<char>,
     pub columns: Option<Vec<String>>,
     pub named_ranges: Option<Vec<String>>,
-    pub conditions: Option<Vec<String>>,
+    pub conditions: Option<Vec<String>>
 }

@@ -4,7 +4,6 @@ pub mod errors;
 pub mod celladdress;
 pub mod namedrange;
 mod test;
-
 use path::PathBuf;
 use crate::{
     config::{SourceFile, TargetFile, GlobalSheets, LocalSheet},
@@ -19,10 +18,10 @@ use std::process::exit;
 use serde::Serialize;
 use crate::config::{FileSettings, Sheets};
 
+/// Priority to CLI arguments, next from config
+/// If in CLI have --config parameter : all options read from toml config
+/// Else - read options from CLI arguments.
 fn main() {
-    /// Priority to CLI arguments, next from config
-    /// If in CLI have --config parameter : all options readed from toml config
-    /// Else - read options from CLI arguments.
     let config_path = PathBuf::from("D:\\Work\\GIT_work\\rust_excel_to_csv_conterter\\excel_to_csv\\test_config.toml");
     let content = fs::read_to_string(&config_path).expect("Could not read file");
     let data: Table = content.parse().unwrap();
