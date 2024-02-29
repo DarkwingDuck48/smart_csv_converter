@@ -2,6 +2,13 @@
 use std::path::PathBuf;
 use serde::Deserialize;
 
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct Config {
+    pub filesettings: FileSettings,
+    pub sheetsettings: Sheets,
+}
+
 #[derive(Deserialize, Debug, Clone)]
 pub struct FileSettings {
     pub source: Option<SourceFile>,

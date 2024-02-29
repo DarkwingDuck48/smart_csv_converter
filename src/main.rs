@@ -15,13 +15,29 @@ use clap::Parser;
 use std::{fs, path};
 use toml::Table;
 use std::process::exit;
+use log::LevelFilter;
 use serde::Serialize;
-use crate::config::{FileSettings, Sheets};
+use crate::config::{Config, FileSettings, Sheets};
 
 /// Priority to CLI arguments, next from config
 /// If in CLI have --config parameter : all options read from toml config
 /// Else - read options from CLI arguments.
 fn main() {
+    // Parse CLI arguments with clap
+
+    let cli = cli::Cli::parse();
+    let log_path_default = PathBuf::from(".\\log.log");
+    // Create logger
+    match cli.log_file {
+        Some(log_file) => {
+            simple_logging::log_to_file(log_file, LevelFilter::Debug).expect("Cant find log file");
+        },
+        None => {
+            simple_logging::log_to_file(log_path_default, LevelFilter::Debug).expect("Cant find log file");
+        }
+    };
+
+
     let config_path = PathBuf::from("D:\\Work\\GIT_work\\rust_excel_to_csv_conterter\\excel_to_csv\\test_config.toml");
     let content = fs::read_to_string(&config_path).expect("Could not read file");
     let data: Table = content.parse().unwrap();
@@ -34,7 +50,12 @@ fn main() {
         }
     };
     //TODO: Exception handling when TomlError
-    println!("{:#?}", sheet_settings);
+    println!("{:#?}", file_settings);
     // println!("{:#?}", file_settings.source);
     // println!("{:#?}", file_settings.target);
+    let config: Config = Config {
+        filesettings: file_settings,
+        sheetsettings: sheet_settings,
+    };
+
 }
