@@ -13,6 +13,10 @@ pub struct Cli {
     /// Path to log file
     pub log_file: Option<PathBuf>,
 
+    /// Path to config file
+    #[arg(long = "config")]
+    pub config: Option<PathBuf>,
+
     /// Parsed sheets in file
     #[arg(short='s',long="sheets", value_delimiter = ' ', num_args = 1..)]
     pub parsed_sheets: Vec<String>,
