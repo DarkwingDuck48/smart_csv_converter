@@ -4,28 +4,30 @@ use std::path::PathBuf;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
-    /// Path to source file
-    pub source_file: PathBuf,
-
-    /// Path to target file
-    pub target_file: Option<PathBuf>,
-
     /// Path to log file
     pub log_file: Option<PathBuf>,
 
-    /// Path to config file
-    #[arg(long = "config")]
-    pub config: Option<PathBuf>,
+    /// Debug Mode
+    #[arg(short, long, action, default_value = "false")]
+    pub debug: bool,
 
-    /// Parsed sheets in file
-    #[arg(short='s',long="sheets", value_delimiter = ' ', num_args = 1..)]
+    /// Path to source file (manual import)
+    #[arg(long, group = "manual")]
+    pub source_file: Option<PathBuf>,
+
+    /// Path to target file (manual import)
+    #[arg(long, group = "manual")]
+    pub target_file: Option<PathBuf>,
+
+    /// Parsed sheets in file (required source and target sheets)
+    #[arg(short = 's', long = "sheets", value_delimiter = ' ', requires = "manual", num_args = 1..)]
     pub parsed_sheets: Vec<String>,
 
-    /// Analyze tables in file
-    #[arg(short, long, action)]
-    pub tables: bool,
+    // Ranges with defined names to parse on sheets
+    #[arg(short = 'r', long = "ranges", value_delimiter = ' ', requires = "manual", num_args = 1..)]
+    pub ranges: Vec<String>,
 
-    /// Debug Mode
-    #[arg(short, long, action)]
-    pub debug: bool,
+    /// Path to config TOML file (only config file needed)
+    #[arg(long = "config")]
+    pub config: Option<PathBuf>,
 }
