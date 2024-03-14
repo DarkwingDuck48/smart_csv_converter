@@ -1,6 +1,27 @@
-/// Module with TOML schema struct
+use std::fs;
+/// Config struct for project
+/// Keep in one place all settings for parser
+/// And use as Deserializer for TOML
 use std::path::PathBuf;
+use std::process::exit;
 use serde::Deserialize;
+use toml::Table;
+
+pub fn create_config(config_path: PathBuf) -> Config {
+    let content = fs::read_to_string(&config_path).expect("Could not read file");
+    let data: Table = content.parse().unwrap();
+    let file_settings: FileSettings = data["file"].clone().try_into().unwrap();
+    let sheet_settings: Sheets = match data["sheets"].clone().try_into() {
+        Ok(d) => d,
+        Err(e) => {
+            eprintln!("TOML parse error: {:?}", e.message());
+            exit(1);
+        }
+    };
+    println!("{:#?}", file_settings);
+    let config: Config = Config { sheetsettings: sheet_settings, filesettings: file_settings };
+    config
+}
 
 
 #[derive(Deserialize, Debug, Clone)]
@@ -11,19 +32,19 @@ pub struct Config {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct FileSettings {
-    pub source: Option<SourceFile>,
-    pub target: Option<TargetFile>,
+    pub source: SourceFile,
+    pub target: TargetFile,
 }
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct SourceFile {
-    pub path: Option<PathBuf>,
+    pub path: PathBuf,
     pub sheets: Option<Vec<String>>,
 }
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct TargetFile {
-    pub path: Option<PathBuf>,
+    pub path: PathBuf,
     pub separator: Option<char>,
     pub columns: Option<Vec<String>>,
 }
