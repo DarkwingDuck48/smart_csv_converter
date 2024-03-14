@@ -29,16 +29,20 @@ fn main() {
 
     // Create log file
     let log_path_default = PathBuf::from(".\\default.log");
+    let log_level:LevelFilter;
+    match debug_mode {
+        true => log_level = LevelFilter::Debug,
+        false => log_level = LevelFilter::Info,
+    }
     match cli.log_file {
         Some(log_file) => {
-            simple_logging::log_to_file(log_file, LevelFilter::Debug).expect("Cant find log file");
+            simple_logging::log_to_file(log_file, log_level).expect("Cant find log file");
         },
         None => {
-            simple_logging::log_to_file(log_path_default, LevelFilter::Debug).expect("Cant find log file");
+            simple_logging::log_to_file(log_path_default, log_level).expect("Cant find log file");
         }
     };
-
-
+    info!("Current log_level set to {log_level}");
     match cli.config {
         Some(config_path) => {
             info!("Passed config {:?} - start working with config!", config_path);
