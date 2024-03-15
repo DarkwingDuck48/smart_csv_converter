@@ -7,15 +7,13 @@ pub mod namedrange;
 mod test;
 mod parse_with_config;
 mod parse_with_manual;
+mod excel_parser;
 
 use path::PathBuf;
-use crate::{
-    parse_with_config::parse_with_config,
-    parse_with_manual::parse_with_manual_args
-};
 use clap::Parser;
 use std::path;
 use log::{info, LevelFilter};
+use crate::config::{Config, create_config_from_toml};
 
 /// Priority to CLI arguments, next from config
 /// If in CLI have --config parameter : all options read from toml config
@@ -46,7 +44,7 @@ fn main() {
     match cli.config {
         Some(config_path) => {
             info!("Passed config {:?} - start working with config!", config_path);
-            parse_with_config(config_path, debug_mode);
+            let config: Config = create_config_from_toml(config_path);
         },
         None => {
             info!("No config file passed in arguments -> work with command args:");
@@ -59,7 +57,6 @@ fn main() {
             info!("Target file path: {:?}", target_file);
             info!("Parsed sheets list {:?}", parsed_sheets);
             info!("Named range list {:?}", named_ranges);
-            parse_with_manual_args(source_file, target_file, parsed_sheets, debug_mode);
 
         }
     }

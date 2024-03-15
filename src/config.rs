@@ -7,7 +7,7 @@ use std::process::exit;
 use serde::Deserialize;
 use toml::Table;
 
-pub fn create_config(config_path: PathBuf) -> Config {
+pub fn create_config_from_toml(config_path: PathBuf) -> Config {
     let content = fs::read_to_string(&config_path).expect("Could not read file");
     let data: Table = content.parse().unwrap();
     let file_settings: FileSettings = data["file"].clone().try_into().unwrap();
@@ -22,7 +22,6 @@ pub fn create_config(config_path: PathBuf) -> Config {
     let config: Config = Config { sheetsettings: sheet_settings, filesettings: file_settings };
     config
 }
-
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Config {
