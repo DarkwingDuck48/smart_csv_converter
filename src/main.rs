@@ -5,15 +5,13 @@ pub mod celladdress;
 pub mod namedrange;
 #[cfg(test)]
 mod test;
-mod parse_with_config;
-mod parse_with_manual;
 mod excel_parser;
 
 use path::PathBuf;
 use clap::Parser;
 use std::path;
 use log::{info, LevelFilter};
-use crate::config::{Config, create_config_from_toml};
+use crate::config::{Config};
 
 /// Priority to CLI arguments, next from config
 /// If in CLI have --config parameter : all options read from toml config
@@ -44,19 +42,11 @@ fn main() {
     match cli.config {
         Some(config_path) => {
             info!("Passed config {:?} - start working with config!", config_path);
-            let config: Config = create_config_from_toml(config_path);
+            let config: Config = Config::from_toml(config_path);
         },
         None => {
             info!("No config file passed in arguments -> work with command args:");
-            let source_file: PathBuf = cli.source_file.expect("Not provided source file path");
-            let target_file: PathBuf = cli.target_file.expect("Not provided target file path");
-            let parsed_sheets: Vec<String> = cli.parsed_sheets;
-            let named_ranges: Vec<String> = cli.ranges;
 
-            info!("Source file path: {:?}", source_file);
-            info!("Target file path: {:?}", target_file);
-            info!("Parsed sheets list {:?}", parsed_sheets);
-            info!("Named range list {:?}", named_ranges);
 
         }
     }

@@ -4,12 +4,14 @@ use std::path::PathBuf;
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
 pub struct Cli {
-    /// Path to log file
-    pub log_file: Option<PathBuf>,
 
     /// Debug Mode
     #[arg(short, long, action, default_value = "false")]
     pub debug: bool,
+
+    /// Path to log file
+    #[arg(short = 'l', long = "log")]
+    pub log_file: Option<PathBuf>,
 
     /// Path to source file (manual import)
     #[arg(long, group = "manual")]
