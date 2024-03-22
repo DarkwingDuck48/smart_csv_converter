@@ -7,7 +7,7 @@ use std::process::exit;
 use log::info;
 use serde::Deserialize;
 use toml::Table;
-use crate::cli::Cli;
+use crate::cli::{Cli, CliArgs};
 
 
 #[derive(Deserialize, Debug, Clone)]
@@ -36,19 +36,19 @@ impl Config {
     }
 
     /// Way to create only global sheet configuration
-    pub fn from_cli(cli: Cli) -> Config {
+    pub fn from_cli(cli: CliArgs) -> Config {
         let source_file: SourceFile = SourceFile {
-            path: cli.source_file.expect("Not provided source file path"),
+            path: cli.source_file,
             sheets: Option::Some(cli.parsed_sheets),
         };
         let target_file: TargetFile = TargetFile {
-            path: cli.target_file.expect("Not provided target file path"),
+            path: cli.target_file,
             separator: Option::Some(','),
             columns: Option::None,
         };
         let global_sheet: GlobalSheets = GlobalSheets {
             columns: Option::None,
-            named_ranges: Some(cli.ranges),
+            named_ranges: Some(cli.named_ranges),
             tables: Option::None,
             checks: Option::None,
         };
@@ -101,4 +101,16 @@ pub struct LocalSheet {
     pub columns: Option<Vec<String>>,
     pub named_ranges: Option<Vec<String>>,
     pub checks: Option<Vec<String>>,
+}
+
+impl PartialEq<String> for LocalSheet {
+    fn eq(&self, other: &String) -> bool {
+        other.eq(&self.sheet_name)
+    }
+}
+
+impl PartialEq<LocalSheet> for String {
+    fn eq(&self, other: &LocalSheet) -> bool {
+        self.eq(&other.sheet_name)
+    }
 }

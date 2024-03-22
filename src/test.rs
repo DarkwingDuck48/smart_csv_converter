@@ -1,4 +1,5 @@
 use crate::celladdress::CellAddress;
+use crate::config::{LocalSheet, Sheets, GlobalSheets};
 
 #[test]
 fn test_cell_address_one_letter() {
@@ -66,4 +67,22 @@ fn test_convert_range_to_cell_no_dollar_sign() {
         }
     )
 }
+
+#[test]
+fn test_localsheet_name_with_string() {
+    assert_eq!(
+        String::from("Test1"),
+        LocalSheet {
+            sheet_name: String::from("Test1"),
+            path: None,
+            separator: None,
+            columns: None,
+            named_ranges: None,
+            checks: None,
+        }
+    )
+}
+
+fn test_find_sheet_in_localsheets() {}
+
 

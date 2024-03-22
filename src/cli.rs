@@ -27,9 +27,23 @@ pub struct Cli {
 
     // Ranges with defined names to parse on sheets
     #[arg(short = 'r', long = "ranges", value_delimiter = ' ', requires = "manual", num_args = 1..)]
-    pub ranges: Vec<String>,
+    pub named_ranges: Vec<String>,
 
     /// Path to config TOML file (only config file needed)
     #[arg(long = "config")]
     pub config: Option<PathBuf>,
+}
+
+pub struct CliArgs {
+    //Debug mode
+    pub debug: bool,
+    //Source file path
+    pub source_file: PathBuf,
+    //Target file path
+    pub target_file: PathBuf,
+    //Parsed sheets list
+    pub parsed_sheets: Vec<String>,
+    // Parsed named ranges
+    pub named_ranges: Vec<String>,
+
 }

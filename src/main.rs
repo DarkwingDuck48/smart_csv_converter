@@ -11,6 +11,7 @@ use path::PathBuf;
 use clap::Parser;
 use std::path;
 use log::{info, LevelFilter};
+use crate::cli::{Cli, CliArgs};
 use crate::config::{Config};
 
 /// Priority to CLI arguments, next from config
@@ -20,6 +21,7 @@ fn main() {
 
     // Parse CLI arguments with clap
     let cli = cli::Cli::parse();
+
     // Debug mode
     let debug_mode = cli.debug;
 
@@ -46,8 +48,14 @@ fn main() {
         },
         None => {
             info!("No config file passed in arguments -> work with command args:");
-
-
+            let config_args: CliArgs = CliArgs {
+                debug: debug_mode,
+                source_file: cli.source_file.expect("Source file not provided"),
+                target_file: cli.target_file.expect("Target file not provided"),
+                parsed_sheets: cli.parsed_sheets,
+                named_ranges: cli.named_ranges,
+            };
+            let config: Config = Config::from_cli(config_args);
         }
     }
 }
