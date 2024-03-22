@@ -4,10 +4,9 @@ use std::fs;
 /// And use as Deserializer for TOML
 use std::path::PathBuf;
 use std::process::exit;
-use log::info;
 use serde::Deserialize;
 use toml::Table;
-use crate::cli::{Cli, CliArgs};
+use crate::cli::CliArgs;
 
 
 #[derive(Deserialize, Debug, Clone)]

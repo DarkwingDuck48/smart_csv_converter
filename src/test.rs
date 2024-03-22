@@ -1,5 +1,5 @@
 use crate::celladdress::CellAddress;
-use crate::config::{LocalSheet, Sheets, GlobalSheets};
+use crate::config::LocalSheet;
 
 #[test]
 fn test_cell_address_one_letter() {
@@ -82,7 +82,5 @@ fn test_localsheet_name_with_string() {
         }
     )
 }
-
-fn test_find_sheet_in_localsheets() {}
 
 

@@ -4,7 +4,7 @@ use log::{debug, info, error};
 use crate::namedrange::{NamedRange, get_named_ranges};
 
 
-fn check_sheetname_in_config(sheet_name: &String, configSheets: Vec<String>) {}
+fn check_sheetname_in_config(sheet_name: &String, config_sheets: Vec<String>) {}
 
 // Default excel file parser
 pub fn parse(config: Config) -> () {

@@ -11,7 +11,7 @@ use path::PathBuf;
 use clap::Parser;
 use std::path;
 use log::{info, LevelFilter};
-use crate::cli::{Cli, CliArgs};
+use crate::cli::CliArgs;
 use crate::config::{Config};
 
 /// Priority to CLI arguments, next from config
@@ -41,10 +41,12 @@ fn main() {
         }
     };
     info!("Current log_level set to {log_level}");
+
     match cli.config {
         Some(config_path) => {
             info!("Passed config {:?} - start working with config!", config_path);
-            let config: Config = Config::from_toml(config_path);
+            let config_file: Config = Config::from_toml(config_path);
+            excel_parser::parse(config_file);
         },
         None => {
             info!("No config file passed in arguments -> work with command args:");
@@ -55,7 +57,8 @@ fn main() {
                 parsed_sheets: cli.parsed_sheets,
                 named_ranges: cli.named_ranges,
             };
-            let config: Config = Config::from_cli(config_args);
+            let config_file: Config = Config::from_cli(config_args);
+            excel_parser::parse(config_file);
         }
     }
 }
