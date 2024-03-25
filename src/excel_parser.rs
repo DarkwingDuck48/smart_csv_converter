@@ -1,10 +1,7 @@
 use calamine::{open_workbook, Reader, Xlsx};
-use crate::config::Config;
+use crate::config::{Config, GlobalSheet, LocalSheet, Sheets};
 use log::{debug, info, error};
 use crate::namedrange::{NamedRange, get_named_ranges};
-
-
-fn check_sheetname_in_config(sheet_name: &String, config_sheets: Vec<String>) {}
 
 // Default excel file parser
 pub fn parse(config: Config) -> () {
@@ -30,7 +27,19 @@ pub fn parse(config: Config) -> () {
     }
     info!("Sheets to parse {:?}", worksheets);
 
-    for sheet_name in worksheets {}
+    info!("Check localsheet section in config");
+    let mut only_global = false;
+
+    if config.sheetsettings.local.is_none() {
+        only_global = true
+    }
+
+    for sheet_name in worksheets {
+        let mut sheet_schema;
+        if only_global {
+            sheet_schema = config.sheetsettings.global.clone()
+        }
+    }
 }
 
 

@@ -45,7 +45,7 @@ impl Config {
             separator: Option::Some(','),
             columns: Option::None,
         };
-        let global_sheet: GlobalSheets = GlobalSheets {
+        let global_sheet: GlobalSheet = GlobalSheet {
             columns: Option::None,
             named_ranges: Some(cli.named_ranges),
             tables: Option::None,
@@ -81,11 +81,11 @@ pub struct TargetFile {
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct Sheets {
-    pub global: GlobalSheets,
+    pub global: GlobalSheet,
     pub local: Option<Vec<LocalSheet>>,
 }
 #[derive(Deserialize, Debug, Clone)]
-pub struct GlobalSheets {
+pub struct GlobalSheet {
     pub columns: Option<Vec<String>>,
     pub named_ranges: Option<Vec<String>>,
     pub tables: Option<Vec<String>>,
