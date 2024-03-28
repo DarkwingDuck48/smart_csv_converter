@@ -12,7 +12,7 @@ use clap::Parser;
 use std::path;
 use log::{info, LevelFilter};
 use crate::cli::CliArgs;
-use crate::config::{Config};
+use crate::config::Config;
 
 /// Priority to CLI arguments, next from config
 /// If in CLI have --config parameter : all options read from toml config
